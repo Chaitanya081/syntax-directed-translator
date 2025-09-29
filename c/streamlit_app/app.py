@@ -5,7 +5,7 @@ import shutil, subprocess
 st.set_page_config(page_title="Expr Eval", layout="centered")
 st.title("Syntax-Directed Translator — Arithmetic Evaluator")
 
-st.write("Enter an arithmetic expression. The deployed app evaluates using Python (safe evaluator). If you run locally and have a compiled C binary `expr_eval`, the app can call it.")
+st.write("Enter an arithmetic expression. The deployed app evaluates using C (safe evaluator). If you run locally and have a compiled C binary `expr_eval`, the app can call it.")
 
 # Input box with NO default value
 expr = st.text_input("Expression")  # no default
