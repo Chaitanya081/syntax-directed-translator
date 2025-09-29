@@ -1,19 +1,18 @@
-# streamlit_app/app.py
 import streamlit as st
 import ast, operator as op
-import shutil, subprocess, sys
+import shutil, subprocess
 
 st.set_page_config(page_title="Expr Eval", layout="centered")
 st.title("Syntax-Directed Translator — Arithmetic Evaluator")
 
 st.write("Enter an arithmetic expression. The deployed app evaluates using Python (safe evaluator). If you run locally and have a compiled C binary `expr_eval`, the app can call it.")
 
-expr = st.text_input("Expression", value="3 + 4 * 2 / (1 - 5) ^ 2")
+# Input box with NO default value
+expr = st.text_input("Expression")  # no default
 
 use_local_c = False
-# If running locally and you have compiled C binary in project root, set use_local_c True in code or place binary in PATH.
+# Checkbox for local C binary (works only locally)
 if st.checkbox("Try local C binary (only works on your machine if compiled)"):
-    # detect binary presence (./expr_eval or expr_eval.exe)
     if shutil.which("./expr_eval") or shutil.which("expr_eval"):
         use_local_c = True
     else:
@@ -23,13 +22,15 @@ if st.button("Evaluate"):
     if expr.strip() == "":
         st.error("Please enter an expression.")
     else:
+        # Display user input as Question
+        st.write("**Question:**", expr)
+
         # Replace ^ with ** for Python parse
         py_expr = expr.replace("^", "**")
 
-        # Try calling local C if requested and available
+        # Try calling local C binary if requested
         if use_local_c:
             try:
-                # call local compiled binary; ensure it's executable
                 proc = subprocess.run(["./expr_eval", expr], capture_output=True, text=True, timeout=5)
                 if proc.returncode == 0:
                     st.success("C result: " + proc.stdout.strip())
@@ -39,14 +40,14 @@ if st.button("Evaluate"):
             except Exception as e:
                 st.error(f"Failed to run C binary: {e}")
         else:
-            # Safe Python evaluator using ast
+            # Safe Python evaluator
             allowed_ops = {
                 ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
                 ast.Div: op.truediv, ast.Pow: op.pow,
                 ast.USub: lambda a: -a, ast.UAdd: lambda a: a
             }
             def eval_node(node):
-                if isinstance(node, ast.Constant):  # python3.8+: ast.Num -> ast.Constant
+                if isinstance(node, ast.Constant):
                     return node.value
                 if isinstance(node, ast.BinOp):
                     left = eval_node(node.left)
