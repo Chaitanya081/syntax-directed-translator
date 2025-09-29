@@ -15,10 +15,12 @@ int pos = 0;
 Token curtok;
 int error_flag = 0;
 
+// Skip spaces
 void skip_space() {
     while (src[pos] == ' ') pos++;
 }
 
+// Read next token
 void next_token() {
     skip_space();
     char c = src[pos];
@@ -45,10 +47,11 @@ void next_token() {
 /* Forward declarations */
 double parse_expression();
 
+// Primary: numbers or parentheses
 double parse_primary() {
     if (curtok.type == T_NUMBER) {
         double val = curtok.value;
-        printf("Step: number = %.10g\n", val);
+        printf("Step: Number = %.10g\n", val);
         next_token();
         return val;
     }
@@ -66,17 +69,19 @@ double parse_primary() {
     return 0;
 }
 
+// Unary +/-
 double parse_unary() {
     if (curtok.type == T_PLUS) { next_token(); return parse_unary(); }
     if (curtok.type == T_MINUS) {
         next_token();
         double val = -parse_unary();
-        printf("Step: unary minus applied, value = %.10g\n", val);
+        printf("Step: Unary minus applied = %.10g\n", val);
         return val;
     }
     return parse_primary();
 }
 
+// Exponentiation
 double parse_pow() {
     double left = parse_unary();
     while (curtok.type == T_POW) {
@@ -89,6 +94,7 @@ double parse_pow() {
     return left;
 }
 
+// Multiplication / Division
 double parse_term() {
     double left = parse_pow();
     while (curtok.type == T_MULT || curtok.type == T_DIV) {
@@ -102,6 +108,7 @@ double parse_term() {
     return left;
 }
 
+// Addition / Subtraction
 double parse_expression() {
     double left = parse_term();
     while (curtok.type == T_PLUS || curtok.type == T_MINUS) {
@@ -115,14 +122,15 @@ double parse_expression() {
     return left;
 }
 
+// Main loop
 int main() {
     char expression[256];
     char choice;
 
-    printf("=== Syntax-Directed Arithmetic Evaluator (C Program) ===\n\n");
+    printf("=== Syntax-Directed Arithmetic Evaluator ===\n\n");
 
     do {
-        printf("Enter an arithmetic expression (or 'q' to quit):\n> ");
+        printf("Enter arithmetic expression (or 'q' to quit):\n> ");
         fgets(expression, sizeof(expression), stdin);
         expression[strcspn(expression, "\n")] = 0; // remove newline
 
@@ -133,7 +141,7 @@ int main() {
 
         if (strcmp(expression, "q") == 0 || strcmp(expression, "Q") == 0) break;
 
-        printf("\nQuestion: %s\n", expression);
+        printf("\nQuestion: %s\n\n", expression);
 
         src = expression;
         pos = 0;
@@ -144,10 +152,9 @@ int main() {
         if (error_flag || curtok.type != T_END) {
             printf("Syntax error in expression.\n\n");
         } else {
-            printf("Final Result: %.10g\n\n", result);
+            printf("\nFinal Result: %.10g\n\n", result);
         }
 
-        // Ask if user wants to continue
         printf("Do you want to enter another expression? (y/n): ");
         choice = getchar();
         while(getchar() != '\n'); // clear input buffer
